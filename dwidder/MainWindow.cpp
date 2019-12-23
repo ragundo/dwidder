@@ -229,5 +229,15 @@ void MainWindow::saveGifAs()
 
 void MainWindow::tick()
 {
+    if (m_pimpl->m_core_suspender == nullptr)
+        m_pimpl->m_core_suspender = new DFHack::CoreSuspender;
+    else
+        m_pimpl->m_core_suspender->lock();
+
+    m_pimpl->m_suspended = true;
+
     m_pimpl->m_logger->appendPlainText("tick");
+
+    m_pimpl->m_core_suspender->unlock();
+    m_pimpl->m_suspended = false;
 }
