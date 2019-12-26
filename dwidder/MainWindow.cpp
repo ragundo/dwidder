@@ -30,6 +30,7 @@
 #include <RemoteServer.h>
 #include <RemoteClient.h>
 #include <VersionInfo.h>
+#include <modules/Gui.h>
 #include "df_all.h"
 
 
@@ -50,6 +51,26 @@
 #include <QPlainTextEdit>
 #include <QTimer>
 
+#include <cmath>
+
+
+/*
+DF Calendar Months
+01: Granite
+02: Slate
+03: Felsite
+04: Hematite
+05: Malachite
+06: Galena
+07: Limestone
+08: Sandstone
+09: Timber
+10: Moonstone
+11: Opal
+12: Obsidian
+
+Each month has 28 days
+*/
 
 static constexpr struct in_place_t {} in_place;
 
@@ -68,6 +89,7 @@ public:
         m_logger->setReadOnly(true);
 
         m_timer = new QTimer(m_parent);
+        m_cur_year_tick = -1;
     }
 
     MainWindow*                       m_parent;
@@ -77,6 +99,10 @@ public:
     // Qt
     QPlainTextEdit*                   m_logger;
     QTimer*                           m_timer;
+
+    int                               m_cur_year_tick;
+    int                               m_world_status_reports_size;
+    int                               m_world_status_announcements_size;
 
 };
 
@@ -227,6 +253,41 @@ void MainWindow::saveGif()
 void MainWindow::saveGifAs()
 {}
 
+
+// Handle the formatting of the Dwarf Fortress date
+// Thanks to Kurik Amudnil for the date stuff
+// http://www.bay12forums.com/smf/index.php?PHPSESSID=669fc6cc7664043c4b34992a301abb0c&topic=91166.msg4247785#msg4247785
+
+QString GetDFDate()
+{
+//    -- Would it be useful to return a part of the DF date?
+//    -- local absTick = 1200*28*12*df.global.cur_year + df.global.cur_year_tick
+    int32_t dfYear  = *df::global::cur_year;
+    int32_t dfMonth = floor((*df::global::cur_year_tick / 33600) + 1);
+    int32_t dfDay   = floor((*df::global::cur_year_tick % 33600)/1200)+1;
+
+    QString dfDateString = QString::number(dfYear);
+    dfDateString = dfDateString.append('-');
+    dfDateString = dfDateString.append(QString::number(dfMonth));
+    dfDateString = dfDateString.append('-');
+    dfDateString = dfDateString.append(QString::number(dfDay));
+    return dfDateString;
+}
+
+QString coord_2_string(const df::coord& p_coord)
+{
+    QString l_result = "[";
+    l_result.append(QString::number(p_coord.x));
+    l_result.append(",");
+    l_result.append(QString::number(p_coord.y));
+    l_result.append(",");
+    l_result.append(QString::number(p_coord.z));
+    l_result.append(",");
+    l_result.append("]");
+
+    return l_result;
+}
+
 void MainWindow::tick()
 {
     if (m_pimpl->m_core_suspender == nullptr)
@@ -236,7 +297,60 @@ void MainWindow::tick()
 
     m_pimpl->m_suspended = true;
 
-    m_pimpl->m_logger->appendPlainText("tick");
+
+    if (m_pimpl->m_cur_year_tick == -1)
+    {
+        // Init
+        m_pimpl->m_world_status_reports_size = (df::global::world)->status.reports.size();
+        m_pimpl->m_world_status_announcements_size = (df::global::world)->status.announcements.size();
+
+    }
+
+    if (m_pimpl->m_cur_year_tick != *df::global::cur_year_tick)
+    {
+        m_pimpl->m_cur_year_tick = *df::global::cur_year_tick;
+        if (m_pimpl->m_world_status_reports_size != (df::global::world)->status.reports.size())
+        {
+            m_pimpl->m_world_status_reports_size = (df::global::world)->status.reports.size();
+
+            int l_last_entry = (df::global::world)->status.reports.size() - 1;
+            df::report* l_report = (df::global::world)->status.reports[l_last_entry];
+            QString l_pos = coord_2_string(l_report->pos);
+            QString l_text = QString::fromStdString(l_report->text);
+            m_pimpl->m_logger->appendPlainText(l_pos + " " + l_text);
+            DFHack::Gui::setViewCoords(l_report->pos.x
+                                      ,l_report->pos.y
+                                      ,l_report->pos.z
+                                      );
+            DFHack::Gui::setCursorCoords(l_report->pos.x
+                                        ,l_report->pos.y
+                                        ,l_report->pos.z
+                                        );
+
+
+        }
+        if (m_pimpl->m_world_status_announcements_size != (df::global::world)->status.announcements.size())
+        {
+            m_pimpl->m_world_status_announcements_size = (df::global::world)->status.announcements.size();
+
+            int l_last_entry = (df::global::world)->status.announcements.size() - 1;
+            df::report* l_report = (df::global::world)->status.announcements[l_last_entry];
+            QString l_pos = coord_2_string(l_report->pos);
+            QString l_text = QString::fromStdString(l_report->text);
+            m_pimpl->m_logger->appendPlainText(l_pos + " " + l_text);
+            DFHack::Gui::setViewCoords(l_report->pos.x
+                                      ,l_report->pos.y
+                                      ,l_report->pos.z
+                                      );
+            DFHack::Gui::setCursorCoords(l_report->pos.x
+                                        ,l_report->pos.y
+                                        ,l_report->pos.z
+                                        );
+
+        }
+    }
+
+    m_pimpl->m_logger->appendPlainText(QString::number(m_pimpl->m_cur_year_tick) + "/" + GetDFDate());
 
     m_pimpl->m_core_suspender->unlock();
     m_pimpl->m_suspended = false;
