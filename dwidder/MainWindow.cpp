@@ -49,8 +49,8 @@
 #include <QTimer>
 #include <QUrl>
 
+#include "utils.h"
 #include <cmath>
-
 /*
 DF Calendar Months
 01: Granite
@@ -326,14 +326,12 @@ void MainWindow::tick()
             {
                 df::report* l_report = (df::global::world)->status.announcements[i];
                 QString     l_pos    = coord_2_string(l_report->pos);
-                QString     l_text   = QString::fromStdString(l_report->text);
+                QString     l_text   = DF2QT(l_report->text);
                 m_pimpl->m_logger->appendPlainText(l_pos + " " + l_text);
             }
             df::report* l_report = (df::global::world)->status.announcements[l_last_entry];
             // Center window
-            DFHack::Gui::setViewCoords(l_report->pos.x,
-                                       l_report->pos.y,
-                                       l_report->pos.z);
+            DFHack::Gui::revealInDwarfmodeMap(l_report->pos, true);
 
             DFHack::Gui::setCursorCoords(l_report->pos.x,
                                          l_report->pos.y,
