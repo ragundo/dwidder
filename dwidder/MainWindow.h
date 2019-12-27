@@ -25,42 +25,44 @@
 
 #include <Core.h>
 #include <QCloseEvent>
-#include <QSortFilterProxyModel>
 #include <QScopedPointer>
+#include <QSortFilterProxyModel>
 
 #include <memory>
 #include <utility>
 #include <vector>
 
-    class EventProxy;
-    class MainWindowPrivate;
+class EventProxy;
+class MainWindowPrivate;
 
-    class MainWindow: public QMainWindow
-    {
-        Q_OBJECT
-    public:
-        explicit MainWindow(std::shared_ptr<EventProxy> &&proxy, QWidget *parent = nullptr);
-        ~MainWindow() override;
+class MainWindow : public QMainWindow
+{
+    Q_OBJECT
+  public:
+    explicit MainWindow(std::shared_ptr<EventProxy>&& proxy,
+                        QWidget*                      parent = nullptr);
+    ~MainWindow() override;
 
-    signals:
-        void resumed_signal();
+  signals:
+    void resumed_signal();
 
-    private slots:
-        //! Open GIF.
-        void openGif();
-        //! Save GIF.
-        void saveGif();
-        //! Save GIF as.
-        void saveGifAs();
-        //! Quit.
-        void quit();
+  private slots:
+    //! Open GIF.
+    void openGif();
+    //! Save GIF.
+    void saveGif();
+    //! Save GIF as.
+    void saveGifAs();
+    //! Quit.
+    void quit();
 
-        void tick();
+    void tick();
 
-    protected:
-        void closeEvent(QCloseEvent* p_close_event) override;
-    private:
-        QScopedPointer<MainWindowPrivate> m_pimpl;
-    };
+  protected:
+    void closeEvent(QCloseEvent* p_close_event) override;
+
+  private:
+    QScopedPointer<MainWindowPrivate> m_pimpl;
+};
 
 #endif
