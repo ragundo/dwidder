@@ -51,6 +51,8 @@
 
 #include "utils.h"
 #include <cmath>
+#include <memory>
+
 /*
 DF Calendar Months
 01: Granite
@@ -73,6 +75,19 @@ static constexpr struct in_place_t
 {
 } in_place;
 
+struct announcement_data
+{
+    df::announcement_type m_type;
+    QString               m_text;
+    df::report::T_flags   m_flags;
+    df::coord             m_pos;
+    int32_t               m_id;
+    int32_t               m_year;
+    int32_t               m_time;
+
+    announcement_data(df::report* p_df_announcement);
+};
+
 class MainWindowPrivate
 {
   public:
@@ -91,13 +106,17 @@ class MainWindowPrivate
     std::shared_ptr<EventProxy> m_event_proxy;
     DFHack::CoreSuspender*      m_core_suspender;
     bool                        m_suspended;
+
     // Qt
     QPlainTextEdit* m_logger;
     QTimer*         m_timer;
 
-    int m_cur_year_tick;
-    int m_world_status_reports_size;
-    int m_world_status_announcements_size;
+    int           m_cur_year_tick;
+    std::set<int> m_processed_announcements;
+
+    bool    process_announcements(int p_num_new_announcements);
+    QString process_announcement(announcement_data& p_data);
+    int     check_new_announcements();
 };
 
 //
@@ -148,75 +167,12 @@ void MainWindow::quit()
     QApplication::quit();
 }
 
-/*
-//
-//---------------------------------------------------------------------------------------
-//
-void MainWindow::on_suspend_action_triggered()
-{
-	if (m_core_suspender == nullptr)
-		m_core_suspender = new DFHack::CoreSuspender;
-	else
-		m_core_suspender->lock();
-
-	m_suspended = true;
-}
-
-//
-//---------------------------------------------------------------------------------------
-//
-void MainWindow::on_resume_action_triggered()
-{
-
-}
-
-//
-//---------------------------------------------------------------------------------------
-//
-void MainWindow::on_treeView_expanded(const QModelIndex& p_index)
-{
-}
-
-//
-//---------------------------------------------------------------------------------------
-//
-void MainWindow::on_actionOpen_in_new_window_triggered()
-{
-
-}
-
-
-//
-//---------------------------------------------------------------------------------------
-//
-void MainWindow::on_actionOpen_in_hex_viewer_triggered()
-{
-
-}
-
-//
-//---------------------------------------------------------------------------------------
-//
-void MainWindow::on_actionOpenPointer_in_hex_viewer_triggered()
-{
-
-}
-
-void MainWindow::on_filter_textChanged(const QString &arg1)
-{
-}
-*/
-
 void MainWindow::closeEvent(QCloseEvent* p_event)
 {
     // Do the thing
     // quit();
     p_event->accept();
 }
-
-// void MainWindow::resumed_signal()
-//{
-//}
 
 void MainWindow::openGif() {}
 
@@ -281,15 +237,20 @@ void MainWindow::tick()
     else
         m_pimpl->m_core_suspender->lock();
 
-    // DF is suspended
+    // DF is suspended now
     m_pimpl->m_suspended = true;
 
     // First scan
     if (m_pimpl->m_cur_year_tick == -1)
     {
-        // Init vector sizes
-        m_pimpl->m_world_status_reports_size       = (df::global::world)->status.reports.size();
-        m_pimpl->m_world_status_announcements_size = (df::global::world)->status.announcements.size();
+        // Copy all the announcements ids to the set
+        for (int i = 0; i < (df::global::world)->status.announcements.size(); i++)
+        {
+            df::report* l_report = (df::global::world)->status.announcements[i];
+            m_pimpl->m_processed_announcements.insert(l_report->id);
+            //Update dwidder tick with th df one
+            m_pimpl->m_cur_year_tick = *df::global::cur_year_tick;
+        }
     }
 
     // Normal scan
@@ -299,49 +260,96 @@ void MainWindow::tick()
         //Update dwidder tick with th df one
         m_pimpl->m_cur_year_tick = *df::global::cur_year_tick;
 
-        // If the dwidder vector size is different from the df one, we need to work
-        if (m_pimpl->m_world_status_reports_size != (df::global::world)->status.reports.size())
+        // Check if there are new announcements
+        int l_new_announcements = m_pimpl->check_new_announcements();
+        if (l_new_announcements > 0)
         {
-            // Check how many new items we have
-            int         l_num_new_items = (df::global::world)->status.reports.size() - m_pimpl->m_world_status_reports_size;
-            int         l_last_entry    = (df::global::world)->status.reports.size() - 1;
-            df::report* l_report        = (df::global::world)->status.reports[l_last_entry];
-            QString     l_pos           = coord_2_string(l_report->pos);
-            QString     l_text          = QString::fromStdString(l_report->text);
-            m_pimpl->m_logger->appendPlainText(l_pos + " " + l_text);
-            DFHack::Gui::setViewCoords(l_report->pos.x, l_report->pos.y, l_report->pos.z);
-            DFHack::Gui::setCursorCoords(l_report->pos.x, l_report->pos.y, l_report->pos.z);
-
-            // Update the dwidder vector with the df one
-            m_pimpl->m_world_status_reports_size = (df::global::world)->status.reports.size();
-            m_pimpl->m_logger->appendPlainText(QString::number(m_pimpl->m_cur_year_tick) + "/" + GetDFDate());
-        }
-
-        if (m_pimpl->m_world_status_announcements_size != (df::global::world)->status.announcements.size())
-        {
-            // Check how many new items we have
-            int l_num_new_items = (df::global::world)->status.announcements.size() - m_pimpl->m_world_status_announcements_size;
-            int l_last_entry    = (df::global::world)->status.announcements.size() - 1;
-            for (int i = m_pimpl->m_world_status_announcements_size; i <= l_last_entry; i++)
-            {
-                df::report* l_report = (df::global::world)->status.announcements[i];
-                QString     l_pos    = coord_2_string(l_report->pos);
-                QString     l_text   = DF2QT(l_report->text);
-                m_pimpl->m_logger->appendPlainText(l_pos + " " + l_text);
-            }
-            df::report* l_report = (df::global::world)->status.announcements[l_last_entry];
-            // Center window
-            DFHack::Gui::revealInDwarfmodeMap(l_report->pos, true);
-
-            DFHack::Gui::setCursorCoords(l_report->pos.x,
-                                         l_report->pos.y,
-                                         l_report->pos.z);
-
-            m_pimpl->m_world_status_announcements_size = (df::global::world)->status.announcements.size();
-            m_pimpl->m_logger->appendPlainText(QString::number(m_pimpl->m_cur_year_tick) + "/" + GetDFDate());
+            m_pimpl->process_announcements(l_new_announcements);
         }
     }
 
     m_pimpl->m_core_suspender->unlock();
     m_pimpl->m_suspended = false;
+}
+
+bool MainWindowPrivate::process_announcements(int p_num_new_announcements)
+{
+    std::vector<std::unique_ptr<announcement_data>> l_initial_data_vector;
+    std::vector<std::unique_ptr<announcement_data>> l_final_data_vector;
+
+    for (int i = (df::global::world)->status.announcements.size() - p_num_new_announcements, j = 0; i < (df::global::world)->status.announcements.size(); i++)
+    {
+        df::report* l_report = (df::global::world)->status.announcements[i];
+        auto        ptr      = std::make_unique<announcement_data>(l_report);
+        l_initial_data_vector.push_back(std::move(ptr));
+    }
+
+    for (int i = l_initial_data_vector.size() - 1; i >= 0; i--)
+    {
+        announcement_data* l_data = l_initial_data_vector[i].get();
+        if (l_data->m_flags.whole & 0x1)
+        {
+            announcement_data* l_data_prev = l_initial_data_vector[i - 1].get();
+            l_data_prev->m_text            = l_data_prev->m_text + " " + l_data->m_text;
+        }
+    }
+
+    for (int i = l_initial_data_vector.size() - 1; i >= 0; i--)
+    {
+        announcement_data* l_data = l_initial_data_vector[i].get();
+        if (l_data->m_flags.whole & 0x1)
+            continue;
+        l_final_data_vector.push_back(std::move(l_initial_data_vector[i]));
+    }
+
+    for (int i = 0; i < l_final_data_vector.size(); i++)
+    {
+        announcement_data* l_data   = l_final_data_vector[i].get();
+        QString            l_result = process_announcement(*l_data);
+        m_logger->appendPlainText(l_result);
+    }
+
+    return true;
+}
+
+QString MainWindowPrivate::process_announcement(announcement_data& p_data)
+{
+    QString l_result = QString::number(m_cur_year_tick) + "/" + GetDFDate() + "-";
+    QString l_pos    = coord_2_string(p_data.m_pos);
+
+    // Center window
+    DFHack::Gui::revealInDwarfmodeMap(p_data.m_pos, true);
+
+    DFHack::Gui::setCursorCoords(p_data.m_pos.x,
+                                 p_data.m_pos.y,
+                                 p_data.m_pos.z);
+
+    l_result.append(l_pos + " " + p_data.m_text);
+
+    return l_result;
+}
+
+int MainWindowPrivate::check_new_announcements()
+{
+    int l_result = 0;
+    for (int i = (df::global::world)->status.announcements.size() - 1; i >= 0; i--)
+    {
+        df::report* l_report = (df::global::world)->status.announcements[i];
+        if (m_processed_announcements.find(l_report->id) != m_processed_announcements.end())
+            break;
+        l_result++;
+        m_processed_announcements.insert(l_report->id);
+    }
+    return l_result;
+}
+
+announcement_data::announcement_data(df::report* p_df_announcement)
+{
+    m_type  = p_df_announcement->type;
+    m_text  = DF2QT(p_df_announcement->text);
+    m_flags = p_df_announcement->flags;
+    m_pos   = p_df_announcement->pos;
+    m_id    = p_df_announcement->id;
+    m_year  = p_df_announcement->year;
+    m_time  = p_df_announcement->time;
 }
