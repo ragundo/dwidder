@@ -29,10 +29,13 @@
 #include <VersionInfo.h>
 #include <cstdint>
 
+#include <df/language_name.h>
 #include <df/report.h>
+#include <df/unit.h>
 #include <df/world.h>
 
 #include <modules/Gui.h>
+#include <modules/Translation.h>
 
 #include "MainWindow.h"
 
@@ -84,6 +87,7 @@ struct announcement_data
     int32_t               m_id;
     int32_t               m_year;
     int32_t               m_time;
+    int32_t               m_unit_id;
 
     announcement_data(df::report* p_df_announcement);
 };
@@ -92,7 +96,9 @@ class MainWindowPrivate
 {
   public:
     MainWindowPrivate(MainWindow* p_parent, std::shared_ptr<EventProxy>&& p_proxy)
-        : m_parent(p_parent), m_event_proxy(std::move(p_proxy)), m_core_suspender(nullptr),
+        : m_parent(p_parent),
+          m_event_proxy(std::move(p_proxy)),
+          m_core_suspender(nullptr),
           m_suspended(false)
     {
         m_logger = new QPlainTextEdit(m_parent);
@@ -116,7 +122,7 @@ class MainWindowPrivate
 
     bool    process_announcements(int p_num_new_announcements);
     QString process_announcement(announcement_data& p_data);
-    int     check_new_announcements();
+    int     check_for_new_announcements();
 };
 
 //
@@ -261,10 +267,10 @@ void MainWindow::tick()
         m_pimpl->m_cur_year_tick = *df::global::cur_year_tick;
 
         // Check if there are new announcements
-        int l_new_announcements = m_pimpl->check_new_announcements();
-        if (l_new_announcements > 0)
+        int l_num_new_announcements = m_pimpl->check_for_new_announcements();
+        if (l_num_new_announcements > 0)
         {
-            m_pimpl->process_announcements(l_new_announcements);
+            m_pimpl->process_announcements(l_num_new_announcements);
         }
     }
 
@@ -280,8 +286,8 @@ bool MainWindowPrivate::process_announcements(int p_num_new_announcements)
     for (int i = (df::global::world)->status.announcements.size() - p_num_new_announcements, j = 0; i < (df::global::world)->status.announcements.size(); i++)
     {
         df::report* l_report = (df::global::world)->status.announcements[i];
-        auto        ptr      = std::make_unique<announcement_data>(l_report);
-        l_initial_data_vector.push_back(std::move(ptr));
+        auto        l_ptr    = std::make_unique<announcement_data>(l_report);
+        l_initial_data_vector.push_back(std::move(l_ptr));
     }
 
     for (int i = l_initial_data_vector.size() - 1; i >= 0; i--)
@@ -329,7 +335,7 @@ QString MainWindowPrivate::process_announcement(announcement_data& p_data)
     return l_result;
 }
 
-int MainWindowPrivate::check_new_announcements()
+int MainWindowPrivate::check_for_new_announcements()
 {
     int l_result = 0;
     for (int i = (df::global::world)->status.announcements.size() - 1; i >= 0; i--)
@@ -352,4 +358,27 @@ announcement_data::announcement_data(df::report* p_df_announcement)
     m_id    = p_df_announcement->id;
     m_year  = p_df_announcement->year;
     m_time  = p_df_announcement->time;
+
+    m_unit_id = -1;
+    if ((m_type == df::announcement_type::MASTERFUL_IMPROVEMENT) || (m_type == df::announcement_type::RECRUIT_PROMOTED))
+    {
+        QStringList l_split = m_text.split(" ");
+        if (l_split.size() >= 2)
+        {
+            QString l_unit_name = l_split.at(0) + " " + l_split.at(1);
+
+            for (int i = 0; i < (df::global::world)->units.active.size(); i++)
+            {
+                df::unit*          l_unit          = (df::global::world)->units.active[i];
+                df::language_name* l_lang          = &(l_unit->name);
+                std::string        l_unit_name_std = DFHack::Translation::TranslateName(l_lang, false, false);
+                QString            l_name          = QString::fromStdString(DF2UTF(l_unit_name_std));
+                if (l_name == l_unit_name)
+                {
+                    m_unit_id = l_unit->id;
+                    break;
+                }
+            }
+        }
+    }
 }
