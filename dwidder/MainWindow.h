@@ -23,17 +23,21 @@
 
 #include <QMainWindow>
 
-#include <Core.h>
 #include <QCloseEvent>
-#include <QScopedPointer>
-#include <QSortFilterProxyModel>
+#include <QDirModel>
+#include <QSettings>
 
-#include <memory>
-#include <utility>
-#include <vector>
+#include <QApplication>
+#include <QDebug>
+#include <QIcon>
+#include <QMenuBar>
+#include <QPlainTextEdit>
+#include <QScopedPointer>
+#include <QTimer>
+#include <QUrl>
 
 class EventProxy;
-class MainWindowPrivate;
+class DwidderApp;
 
 class MainWindow : public QMainWindow
 {
@@ -42,6 +46,20 @@ class MainWindow : public QMainWindow
     explicit MainWindow(std::shared_ptr<EventProxy>&& proxy,
                         QWidget*                      parent = nullptr);
     ~MainWindow() override;
+
+  public:
+    void addText(QString& p_text)
+    {
+        m_logger->appendPlainText(p_text);
+    }
+
+  protected:
+    void closeEvent(QCloseEvent* p_close_event) override;
+
+  private:
+    QPlainTextEdit*            m_logger;
+    QTimer*                    m_timer;
+    QScopedPointer<DwidderApp> m_app;
 
   signals:
     void resumed_signal();
@@ -57,12 +75,6 @@ class MainWindow : public QMainWindow
     void quit();
 
     void tick();
-
-  protected:
-    void closeEvent(QCloseEvent* p_close_event) override;
-
-  private:
-    QScopedPointer<MainWindowPrivate> m_pimpl;
 };
 
 #endif
