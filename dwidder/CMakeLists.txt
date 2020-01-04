@@ -23,6 +23,7 @@ set(DWIDDER_SOURCES
     main.cpp
     EventProxy.cpp
     MainWindow.cpp
+    DwidderApp.cpp
     ${RSCS}
 )
 
