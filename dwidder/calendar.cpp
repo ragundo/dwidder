@@ -1,5 +1,5 @@
 /*
- * Copyright 202' Rafael Agundo
+ * Copyright 2020 Rafael Agundo
  *
  * This file is part of dwarfexplorer plugin for DFHack
  * The code is based on Clement Vuchener qtlabors plugin for DFHack

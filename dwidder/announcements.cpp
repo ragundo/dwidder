@@ -1,5 +1,5 @@
 /*
- * Copyright 202' Rafael Agundo
+ * Copyright 2020 Rafael Agundo
  *
  * This file is part of dwarfexplorer plugin for DFHack
  * The code is based on Clement Vuchener qtlabors plugin for DFHack
@@ -52,6 +52,7 @@ announcement_data::announcement_data(df::report* p_df_announcement)
         case df::announcement_type::STRESSED_CITIZEN:
         case df::announcement_type::SOLDIER_BECOMES_MASTER:
         case df::announcement_type::NEW_MANDATE:
+        case df::announcement_type::CANCEL_JOB:
             process = true;
         default: // SEASON_DRY SEASON_AUTUMN
             break;
