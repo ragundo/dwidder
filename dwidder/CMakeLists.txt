@@ -1,6 +1,6 @@
 project(dwidder LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
 find_package(Qt5 REQUIRED Core Widgets Qml Quick QuickWidgets)
 
@@ -24,6 +24,11 @@ set(DWIDDER_SOURCES
     EventProxy.cpp
     MainWindow.cpp
     DwidderApp.cpp
+    dwidder_utils.cpp
+    announcements.cpp
+    calendar.cpp
+    announcements_channel.cpp
+    calendar_channel.cpp
     ${RSCS}
 )
 

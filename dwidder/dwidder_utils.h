@@ -19,41 +19,19 @@
  *
  */
 
-#ifndef DWIDDERAPP_H
-#define DWIDDERAPP_H
+#ifndef DWIDDER_UTILS_H
+#define DWIDDER_UTILS_H
 
-#include "EventProxy.h"
-#include "announcements_channel.h"
-#include "calendar_channel.h"
-#include <Core.h>
+#include <DataDefs.h>
+#include <df/coord.h>
 
-class MainWindow;
+#include <QString>
 
-class DwidderApp
-{
-  public:
-    DwidderApp(MainWindow* p_parent, std::shared_ptr<EventProxy>&& p_proxy);
+struct calendar_data;
 
-    void DF_suspend();
-    void DF_resume();
+QString DateAsString(int p_year, int p_month, int p_day);
+QString DateAsString(calendar_data* p_calendar_data);
+QString GetDFDate();
+QString coord_2_string(const df::coord& p_coord);
 
-    void tick();
-
-    void addText(QString& p_string);
-    int  get_cur_year_tick();
-
-  protected:
-    MainWindow*                            m_parent;
-    std::shared_ptr<EventProxy>            m_event_proxy;
-    std::unique_ptr<DFHack::CoreSuspender> m_core_suspender;
-    bool                                   m_suspended;
-
-    std::unique_ptr<calendar_channel>      m_calendar_channel;
-    std::unique_ptr<announcements_channel> m_announcements_channel;
-
-    int m_cur_year_tick;
-
-    void init();
-};
-
-#endif
+#endif // DWIDDER_UTILS_H

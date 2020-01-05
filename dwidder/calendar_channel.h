@@ -19,41 +19,29 @@
  *
  */
 
-#ifndef DWIDDERAPP_H
-#define DWIDDERAPP_H
+#ifndef CALENDAR_CHANNEL_H
+#define CALENDAR_CHANNEL_H
 
-#include "EventProxy.h"
-#include "announcements_channel.h"
-#include "calendar_channel.h"
-#include <Core.h>
+#include <QString>
 
-class MainWindow;
+#include "calendar.h"
 
-class DwidderApp
+class DwidderApp;
+
+class calendar_channel
 {
   public:
-    DwidderApp(MainWindow* p_parent, std::shared_ptr<EventProxy>&& p_proxy);
-
-    void DF_suspend();
-    void DF_resume();
-
-    void tick();
-
-    void addText(QString& p_string);
-    int  get_cur_year_tick();
-
-  protected:
-    MainWindow*                            m_parent;
-    std::shared_ptr<EventProxy>            m_event_proxy;
-    std::unique_ptr<DFHack::CoreSuspender> m_core_suspender;
-    bool                                   m_suspended;
-
-    std::unique_ptr<calendar_channel>      m_calendar_channel;
-    std::unique_ptr<announcements_channel> m_announcements_channel;
-
-    int m_cur_year_tick;
-
+    calendar_channel(DwidderApp* p_parent);
+    void do_work();
     void init();
+    void update();
+
+  private:
+    QString process_calendar();
+
+  private:
+    DwidderApp*   m_parent;
+    calendar_data m_calendar_data;
 };
 
 #endif

@@ -1,25 +1,33 @@
-#include "DwidderApp.h"
-
-
-#include <df/world.h>
-
 /*
-DF Calendar Months
-01: Granite
-02: Slate
-03: Felsite
-04: Hematite
-05: Malachite
-06: Galena
-07: Limestone
-08: Sandstone
-09: Timber
-10: Moonstone
-11: Opal
-12: Obsidian
+ * Copyright 202' Rafael Agundo
+ *
+ * This file is part of dwarfexplorer plugin for DFHack
+ * The code is based on Clement Vuchener qtlabors plugin for DFHack
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ */
 
-Each month has 28 days
-*/
+#include <memory>
+
+#include "DwidderApp.h"
+#include "MainWindow.h"
+#include "announcements_channel.h"
+#include "calendar_channel.h"
+
+#include "Datadefs.h"
+#include <df/global_objects.h>
 
 DwidderApp::DwidderApp(MainWindow* p_parent, std::shared_ptr<EventProxy>&& p_proxy)
     : m_parent(p_parent),
@@ -27,253 +35,43 @@ DwidderApp::DwidderApp(MainWindow* p_parent, std::shared_ptr<EventProxy>&& p_pro
       m_core_suspender(nullptr),
       m_suspended(false)
 {
-
-
-    m_cur_year_tick = -1;
+    m_cur_year_tick         = -1;
+    m_announcements_channel = std::make_unique<announcements_channel>(this);
+    m_calendar_channel      = std::make_unique<calendar_channel>(this);
 }
 
-QString DateAsString(int p_year, int p_month, int p_day)
+void DwidderApp::init()
 {
-    QString dfDateString = QString::number(p_year);
-    dfDateString         = dfDateString.append('-');
-    dfDateString         = dfDateString.append(QString::number(p_month));
-    dfDateString         = dfDateString.append('-');
-    dfDateString         = dfDateString.append(QString::number(p_day));
-    return dfDateString;
+    m_calendar_channel->update();
+    m_announcements_channel->init();
 }
 
-QString DateAsString(calendar_data& p_calendar_data)
-{
-    return DateAsString(p_calendar_data.m_year,
-                        p_calendar_data.m_month,
-                        p_calendar_data.m_day);
-}
-
-/**
- * @brief Handle the formatting of the Dwarf Fortress date
- *
- * Thanks to Kurik Amudnil for the date stuff
- * http://www.bay12forums.com/smf/index.php?PHPSESSID=669fc6cc7664043c4b34992a301abb0c&topic=91166.msg4247785#msg4247785
- * @return QString with the date inf format YYYY/M/D
- */
-QString GetDFDate()
-{
-    //    -- Would it be useful to return a part of the DF date?
-    //    -- local absTick = 1200*28*12*df.global.cur_year +
-    //    df.global.cur_year_tick
-    int32_t dfYear  = *df::global::cur_year;
-    int32_t dfMonth = floor((*df::global::cur_year_tick / 33600) + 1);
-    int32_t dfDay   = floor((*df::global::cur_year_tick % 33600) / 1200) + 1;
-
-    return DateAsString(dfYear, dfMonth, dfDay);
-}
-
-/**
- * @brief  Convert a df.coord (x,y,z) to a string
- *
- * @param p_coord df.coord object
- * @return QString string representation of the object
- */
-QString coord_2_string(const df::coord& p_coord)
-{
-    QString l_result = "[";
-    l_result.append(QString::number(p_coord.x));
-    l_result.append(",");
-    l_result.append(QString::number(p_coord.y));
-    l_result.append(",");
-    l_result.append(QString::number(p_coord.z));
-    l_result.append(",");
-    l_result.append("]");
-
-    return l_result;
-}
-
-bool DwidderApp::process_announcements(int p_num_new_announcements)
-{
-    std::vector<std::unique_ptr<announcement_data>> l_initial_data_vector;
-    std::vector<std::unique_ptr<announcement_data>> l_final_data_vector;
-
-    for (int i = (df::global::world)->status.announcements.size() - p_num_new_announcements, j = 0; i < (df::global::world)->status.announcements.size(); i++)
-    {
-        df::report* l_report = (df::global::world)->status.announcements[i];
-        auto        l_ptr    = std::make_unique<announcement_data>(l_report);
-        l_initial_data_vector.push_back(std::move(l_ptr));
-    }
-
-    for (int i = l_initial_data_vector.size() - 1; i >= 0; i--)
-    {
-        announcement_data* l_data = l_initial_data_vector[i].get();
-        if (l_data->m_flags.whole & 0x1)
-        {
-            announcement_data* l_data_prev = l_initial_data_vector[i - 1].get();
-            l_data_prev->m_text            = l_data_prev->m_text + " " + l_data->m_text;
-        }
-    }
-
-    for (int i = l_initial_data_vector.size() - 1; i >= 0; i--)
-    {
-        announcement_data* l_data = l_initial_data_vector[i].get();
-        if (l_data->m_flags.whole & 0x1)
-            continue;
-        l_final_data_vector.push_back(std::move(l_initial_data_vector[i]));
-    }
-
-    for (int i = 0; i < l_final_data_vector.size(); i++)
-    {
-        announcement_data* l_data   = l_final_data_vector[i].get();
-        QString            l_result = process_announcement(*l_data);
-        QString l_result2  = process_announcement(*l_data);
-        m_parent->addText(l_result2);
-    }
-    return true;
-}
-
-QString DwidderApp::process_announcement(announcement_data& p_data)
-{
-    QString l_result = QString::number(m_cur_year_tick) + "/" + GetDFDate() + "-";
-    QString l_pos    = coord_2_string(p_data.m_pos);
-
-    // Center window
-    DFHack::Gui::revealInDwarfmodeMap(p_data.m_pos, true);
-
-    DFHack::Gui::setCursorCoords(p_data.m_pos.x,
-                                 p_data.m_pos.y,
-                                 p_data.m_pos.z);
-
-    l_result.append(l_pos + " " + p_data.m_text);
-
-    return l_result;
-}
-
-int DwidderApp::check_for_new_announcements()
-{
-    int l_result = 0;
-    for (int i = (df::global::world)->status.announcements.size() - 1; i >= 0; i--)
-    {
-        df::report* l_report = (df::global::world)->status.announcements[i];
-        if (m_processed_announcements.find(l_report->id) != m_processed_announcements.end())
-            break;
-        l_result++;
-        m_processed_announcements.insert(l_report->id);
-    }
-    return l_result;
-}
-
-announcement_data::announcement_data(df::report* p_df_announcement)
-{
-    m_type  = p_df_announcement->type;
-    m_text  = DF2QT(p_df_announcement->text);
-    m_flags = p_df_announcement->flags;
-    m_pos   = p_df_announcement->pos;
-    m_id    = p_df_announcement->id;
-    m_year  = p_df_announcement->year;
-    m_time  = p_df_announcement->time;
-
-    bool process = false;
-    m_unit_id    = -1;
-    switch (m_type)
-    {
-        case df::announcement_type::MASTERFUL_IMPROVEMENT:
-        case df::announcement_type::RECRUIT_PROMOTED:
-        case df::announcement_type::CITIZEN_BECOMES_NONSOLDIER:
-        case df::announcement_type::CITIZEN_BECOMES_SOLDIER:
-        case df::announcement_type::ITEM_ATTACHMENT: //comma
-        default:
-            break;
-    }
-
-    if (process)
-    {
-        QStringList l_split = m_text.split(" ");
-        if (l_split.size() >= 2)
-        {
-            QString l_unit_name = l_split.at(0) + " " + l_split.at(1);
-
-            for (int i = 0; i < (df::global::world)->units.active.size(); i++)
-            {
-                df::unit*          l_unit          = (df::global::world)->units.active[i];
-                df::language_name* l_lang          = &(l_unit->name);
-                std::string        l_unit_name_std = DFHack::Translation::TranslateName(l_lang, false, false);
-                QString            l_name          = QString::fromStdString(DF2UTF(l_unit_name_std));
-                if (l_name == l_unit_name)
-                {
-                    m_unit_id = l_unit->id;
-                    break;
-                }
-            }
-        }
-    }
-}
-
-QString DwidderApp::process_calendar()
-{
-    bool l_new_month = false;
-    bool l_new_year  = false;
-
-    auto l_year   = *df::global::cur_year;
-    auto l__month = floor((*df::global::cur_year_tick / 33600) + 1);
-    auto l_day    = floor((*df::global::cur_year_tick % 33600) / 1200) + 1;
-
-    if (l_day != m_calendar_data.m_day)
-    {
-        if (l_day == 1)
-        {
-            // new month
-            l_new_month = true;
-        }
-    }
-
-    if (l_year != m_calendar_data.m_year)
-    {
-        // new year
-        l_new_year = true;
-    }
-
-    m_calendar_data.m_day   = l_day;
-    m_calendar_data.m_month = l__month;
-    m_calendar_data.m_year  = l_year;
-
-    if (l_new_year)
-    {
-        return DateAsString(m_calendar_data) + " New Year!!";
-    }
-    else if (l_new_month)
-    {
-        return DateAsString(m_calendar_data) + " New month!!";
-    }
-    return "";
-}
-
-void calendar_data::update()
-{
-    m_year  = *df::global::cur_year;
-    m_month = floor((*df::global::cur_year_tick / 33600) + 1);
-    m_day   = floor((*df::global::cur_year_tick % 33600) / 1200) + 1;
-}
-
-void DwidderApp::tick()
+void DwidderApp::DF_suspend()
 {
     // Check if the core suspender was created or not. If not
     // create it. Then suspend DF
-    if (m_core_suspender == nullptr)
-        m_core_suspender = new DFHack::CoreSuspender;
+    if (!m_core_suspender)
+        m_core_suspender = std::make_unique<DFHack::CoreSuspender>();
     else
         m_core_suspender->lock();
 
     m_suspended = false;
+}
+
+void DwidderApp::DF_resume()
+{
+    m_core_suspender->unlock();
+    m_suspended = false;
+}
+
+void DwidderApp::tick()
+{
+    DF_suspend();
 
     // First scan
     if (m_cur_year_tick == -1)
     {
-        m_calendar_data.update();
-        // Copy all the announcements ids to the set
-        for (int i = 0; i < (df::global::world)->status.announcements.size(); i++)
-        {
-            df::report* l_report = (df::global::world)->status.announcements[i];
-            m_processed_announcements.insert(l_report->id);
-            //Update dwidder tick with th df one
-            m_cur_year_tick = *df::global::cur_year_tick;
-        }
+        init();
     }
 
     // Normal scan
@@ -283,21 +81,22 @@ void DwidderApp::tick()
         //Update dwidder tick with th df one
         m_cur_year_tick = *df::global::cur_year_tick;
 
-        // Check for calendar changes
-        QString calendar_event = process_calendar();
-        if (calendar_event.size() > 0)
-        {
-            m_parent->addText(calendar_event);
-        }
+        // calendar channel
+        m_calendar_channel->do_work();
 
-        // Check if there are new announcements
-        int l_num_new_announcements = check_for_new_announcements();
-        if (l_num_new_announcements > 0)
-        {
-            process_announcements(l_num_new_announcements);
-        }
+        // announcements channel
+        m_announcements_channel->do_work();
     }
 
-    m_core_suspender->unlock();
-    m_suspended = false;
+    DF_resume();
+}
+
+void DwidderApp::addText(QString& p_string)
+{
+    m_parent->addText(p_string);
+}
+
+int DwidderApp::get_cur_year_tick()
+{
+    return m_cur_year_tick;
 }

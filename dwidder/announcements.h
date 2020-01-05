@@ -19,41 +19,29 @@
  *
  */
 
-#ifndef DWIDDERAPP_H
-#define DWIDDERAPP_H
+#ifndef ANNOUNCEMENTS_H
+#define ANNOUNCEMENTS_H
 
-#include "EventProxy.h"
-#include "announcements_channel.h"
-#include "calendar_channel.h"
-#include <Core.h>
+#include <DataDefs.h>
+#include <df/announcement_type.h>
+#include <df/coord.h>
+#include <df/report.h>
 
-class MainWindow;
+#include <QString>
+#include <QStringList>
 
-class DwidderApp
+struct announcement_data
 {
-  public:
-    DwidderApp(MainWindow* p_parent, std::shared_ptr<EventProxy>&& p_proxy);
+    df::announcement_type m_type;
+    QString               m_text;
+    df::report::T_flags   m_flags;
+    df::coord             m_pos;
+    int32_t               m_id;
+    int32_t               m_year;
+    int32_t               m_time;
+    int                   m_unit_id;
 
-    void DF_suspend();
-    void DF_resume();
-
-    void tick();
-
-    void addText(QString& p_string);
-    int  get_cur_year_tick();
-
-  protected:
-    MainWindow*                            m_parent;
-    std::shared_ptr<EventProxy>            m_event_proxy;
-    std::unique_ptr<DFHack::CoreSuspender> m_core_suspender;
-    bool                                   m_suspended;
-
-    std::unique_ptr<calendar_channel>      m_calendar_channel;
-    std::unique_ptr<announcements_channel> m_announcements_channel;
-
-    int m_cur_year_tick;
-
-    void init();
+    announcement_data(df::report* p_df_announcement);
 };
 
-#endif
+#endif // ANNOUNCEMENTS_H

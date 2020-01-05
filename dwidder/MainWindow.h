@@ -1,7 +1,8 @@
 /*
- * Copyright 2019 Clement Vuchener
+ * Copyright 202' Rafael Agundo
  *
- * This file is part of qtlabors plugin for DFHack
+ * This file is part of dwarfexplorer plugin for DFHack
+ * The code is based on Clement Vuchener qtlabors plugin for DFHack
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -36,7 +37,8 @@
 #include <QTimer>
 #include <QUrl>
 
-class EventProxy;
+#include "EventProxy.h"
+
 class DwidderApp;
 
 class MainWindow : public QMainWindow

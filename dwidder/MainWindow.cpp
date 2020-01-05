@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Rafael Agundo
+ * Copyright 202' Rafael Agundo
  *
  * This file is part of dwarfexplorer plugin for DFHack
  * The code is based on Clement Vuchener qtlabors plugin for DFHack
@@ -18,6 +18,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
+
 #include "MainWindow.h"
 #include "DwidderApp.h"
 
@@ -65,11 +66,7 @@ MainWindow::MainWindow(std::shared_ptr<EventProxy>&& p_proxy, QWidget* p_parent)
 //
 MainWindow::~MainWindow()
 {
-    if (m_app->m_core_suspender)
-    {
-        m_app->m_core_suspender->unlock();
-        delete m_app->m_core_suspender;
-    }
+    m_app->DF_resume();
 }
 
 void MainWindow::quit()

@@ -22,15 +22,16 @@
 #define QT_UTILS_H
 
 #include <QString>
+#include <string>
 
 #include "MiscUtils.h"
 
-inline QString DF2QT(const std::string &str)
+inline QString DF2QT(const std::string& str)
 {
     return QString::fromStdString(DF2UTF(str));
 }
 
-inline std::string QT2DF(const QString &str)
+inline std::string QT2DF(const QString& str)
 {
     return UTF2DF(str.toStdString());
 }
