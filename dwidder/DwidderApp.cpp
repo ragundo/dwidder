@@ -21,13 +21,18 @@
 
 #include <memory>
 
+#include "DataDefs.h"
+
+#include <df/global_objects.h>
+#include <df/unit.h>
+#include <df/world.h>
+
 #include "DwidderApp.h"
 #include "MainWindow.h"
 #include "channels/announcements/announcements_channel.h"
 #include "channels/calendar/calendar_channel.h"
 
-#include "DataDefs.h"
-#include <df/global_objects.h>
+#include <modules/Translation.h>
 
 DwidderApp::DwidderApp(MainWindow* p_parent, std::shared_ptr<EventProxy>&& p_proxy)
     : m_parent(p_parent),
@@ -104,4 +109,25 @@ void DwidderApp::addText(QString& p_string)
 int DwidderApp::get_cur_year_tick()
 {
     return m_cur_year_tick;
+}
+
+int DwidderApp::get_dwarf_id_by_name_in_text(QString& p_dwarf_name)
+{
+    int l_dwarf_id = m_map_dwarf_name_2_id.value(p_dwarf_name);
+    if (l_dwarf_id != 0)
+        return l_dwarf_id;
+
+    for (int i = 0; i < (df::global::world)->units.active.size(); i++)
+    {
+        df::unit*          l_unit          = (df::global::world)->units.active[i];
+        df::language_name* l_lang          = &(l_unit->name);
+        std::string        l_unit_name_std = DFHack::Translation::TranslateName(l_lang, false, false);
+        QString            l_name          = QString::fromStdString(DF2UTF(l_unit_name_std));
+        if (l_name == p_dwarf_name)
+        {
+            m_map_dwarf_name_2_id[l_name] = l_unit->id;
+            return l_unit->id;
+        }
+    }
+    return -1;
 }

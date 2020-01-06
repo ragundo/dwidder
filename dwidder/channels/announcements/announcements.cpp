@@ -25,23 +25,22 @@
 #include <df/coord2d.h>
 #include <df/language_name.h>
 #include <df/report.h>
-#include <df/unit.h>
-#include <df/world.h>
-
-#include <modules/Translation.h>
 
 announcement_data::announcement_data(df::report* p_df_announcement)
 {
-    m_type    = p_df_announcement->type;
-    m_text    = DF2QT(p_df_announcement->text);
-    m_flags   = p_df_announcement->flags;
-    m_pos     = p_df_announcement->pos;
-    m_id      = p_df_announcement->id;
-    m_year    = p_df_announcement->year;
-    m_time    = p_df_announcement->time;
-    m_unit_id = -1;
+    m_type     = p_df_announcement->type;
+    m_text     = DF2QT(p_df_announcement->text);
+    m_flags    = p_df_announcement->flags;
+    m_pos      = p_df_announcement->pos;
+    m_id       = p_df_announcement->id;
+    m_year     = p_df_announcement->year;
+    m_time     = p_df_announcement->time;
+    m_has_unit = false;
+    m_unit_id  = -1;
+}
 
-    bool process = false;
+std::optional<QString> announcement_data::check_for_unit_name()
+{
     switch (m_type)
     {
         case df::announcement_type::MASTERFUL_IMPROVEMENT:
@@ -53,30 +52,41 @@ announcement_data::announcement_data(df::report* p_df_announcement)
         case df::announcement_type::SOLDIER_BECOMES_MASTER:
         case df::announcement_type::NEW_MANDATE:
         case df::announcement_type::CANCEL_JOB:
-            process = true;
+            return get_dwarf_name(0);
+        case df::announcement_type::ARTWORK_DEFACED:
+            return get_dwarf_name(1);
         default: // SEASON_DRY SEASON_AUTUMN
-            break;
+            return {};
     }
+}
 
-    if (process)
+std::optional<QString> announcement_data::get_dwarf_name(int p_mode)
+{
+    if (p_mode == 0) // Vucar Zsaedk. spearman has ....
     {
         QStringList l_split = m_text.split(" ");
         if (l_split.size() >= 2)
         {
             QString l_unit_name = l_split.at(0) + " " + l_split.at(1);
 
-            for (int i = 0; i < (df::global::world)->units.active.size(); i++)
-            {
-                df::unit*          l_unit          = (df::global::world)->units.active[i];
-                df::language_name* l_lang          = &(l_unit->name);
-                std::string        l_unit_name_std = DFHack::Translation::TranslateName(l_lang, false, false);
-                QString            l_name          = QString::fromStdString(DF2UTF(l_unit_name_std));
-                if (l_name == l_unit_name)
-                {
-                    m_unit_id = l_unit->id;
-                    break;
-                }
-            }
+            // Remove end comma after name, if any
+            QStringList l_no_commas = l_unit_name.split(",");
+            return l_no_commas.at(0);
         }
+        return {};
     }
+    if (p_mode == 1) // A masterwork of Vucar Zasidistan has been lost!
+    {
+        QStringList l_split = m_text.split(" ");
+        if (l_split.size() >= 4)
+        {
+            QString l_unit_name = l_split.at(3) + " " + l_split.at(4);
+
+            // Remove end comma after name, if any
+            QStringList l_no_commas = l_unit_name.split(",");
+            return l_no_commas.at(0);
+        }
+        return {};
+    }
+    return {};
 }

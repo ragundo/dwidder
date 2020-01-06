@@ -28,6 +28,8 @@
 #include "channels/weather/weather_channel.h"
 #include <Core.h>
 
+#include <QMap>
+
 class MainWindow;
 
 class DwidderApp
@@ -42,6 +44,7 @@ class DwidderApp
 
     void addText(QString& p_string);
     int  get_cur_year_tick();
+    int  get_dwarf_id_by_name_in_text(QString& p_dwarf_name);
 
   protected:
     MainWindow*                            m_parent;
@@ -54,6 +57,8 @@ class DwidderApp
     std::unique_ptr<weather_channel>       m_weather_channel;
 
     int m_cur_year_tick;
+
+    QMap<QString, int> m_map_dwarf_name_2_id;
 
     void init();
 };

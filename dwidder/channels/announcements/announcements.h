@@ -30,6 +30,8 @@
 #include <QString>
 #include <QStringList>
 
+#include <optional>
+
 struct announcement_data
 {
     df::announcement_type m_type;
@@ -39,9 +41,14 @@ struct announcement_data
     int32_t               m_id;
     int32_t               m_year;
     int32_t               m_time;
+    bool                  m_has_unit;
     int                   m_unit_id;
 
     announcement_data(df::report* p_df_announcement);
+    std::optional<QString> check_for_unit_name();
+
+  private:
+    std::optional<QString> get_dwarf_name(int p_mode);
 };
 
 #endif // ANNOUNCEMENTS_H

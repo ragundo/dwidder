@@ -20,15 +20,15 @@
  */
 
 #include "announcements_channel.h"
+#include "../../dwidder_utils.h"
 #include "DataDefs.h"
 #include "announcements.h"
-#include "dwidder_utils.h"
 #include <df/global_objects.h>
 #include <df/report.h>
 #include <df/world.h>
 #include <modules/Gui.h>
 
-#include "DwidderApp.h"
+#include "../../DwidderApp.h"
 
 announcements_channel::announcements_channel(DwidderApp* p_parent)
     : m_parent(p_parent)
@@ -76,9 +76,19 @@ bool announcements_channel::process_announcements(int p_num_new_announcements)
 
     for (int i = (df::global::world)->status.announcements.size() - p_num_new_announcements, j = 0; i < (df::global::world)->status.announcements.size(); i++)
     {
-        df::report* l_report = (df::global::world)->status.announcements[i];
-        auto        l_ptr    = std::make_unique<announcement_data>(l_report);
-        l_initial_data_vector.push_back(std::move(l_ptr));
+        df::report* l_report       = (df::global::world)->status.announcements[i];
+        auto        l_announcement = std::make_unique<announcement_data>(l_report);
+
+        if (auto l_dwarf_name = l_announcement->check_for_unit_name())
+        {
+            int l_dwarf_id = m_parent->get_dwarf_id_by_name_in_text(*l_dwarf_name);
+            if (l_dwarf_id != -1)
+            {
+                l_announcement->m_has_unit = true;
+                l_announcement->m_unit_id  = l_dwarf_id;
+            }
+        }
+        l_initial_data_vector.push_back(std::move(l_announcement));
     }
 
     for (int i = l_initial_data_vector.size() - 1; i >= 0; i--)
@@ -101,12 +111,11 @@ bool announcements_channel::process_announcements(int p_num_new_announcements)
 
     for (int i = 0; i < l_final_data_vector.size(); i++)
     {
-        announcement_data* l_data    = l_final_data_vector[i].get();
-        QString            l_result  = process_announcement(l_data);
-        QString            l_result2 = process_announcement(l_data);
+        announcement_data* l_data   = l_final_data_vector[i].get();
+        QString            l_result = process_announcement(l_data);
 
         // New event
-        m_parent->addText(l_result2);
+        m_parent->addText(l_result);
     }
     return true;
 }
@@ -123,7 +132,10 @@ QString announcements_channel::process_announcement(announcement_data* p_data)
                                  p_data->m_pos.y,
                                  p_data->m_pos.z);
 
-    l_result.append(l_pos + " " + p_data->m_text);
+    if (p_data->m_has_unit)
+        l_result.append(l_pos + " " + QString::number(p_data->m_type) + " " + p_data->m_text + " (" + QString::number(p_data->m_unit_id) + ")");
+    else
+        l_result.append(l_pos + " " + QString::number(p_data->m_type) + " " + p_data->m_text);
 
     return l_result;
 }
