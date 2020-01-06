@@ -23,8 +23,8 @@
 #define DWIDDERAPP_H
 
 #include "EventProxy.h"
-#include "announcements_channel.h"
-#include "calendar_channel.h"
+#include "channels/announcements/announcements_channel.h"
+#include "channels/calendar/calendar_channel.h"
 #include "channels/weather/weather_channel.h"
 #include <Core.h>
 

@@ -22,10 +22,10 @@ set(DWIDDER_SOURCES
     MainWindow.cpp
     DwidderApp.cpp
     dwidder_utils.cpp
-    announcements.cpp
-    calendar.cpp
-    announcements_channel.cpp
-    calendar_channel.cpp
+    channels/announcements/announcements.cpp
+    channels/announcements/announcements_channel.cpp
+    channels/calendar/calendar.cpp
+    channels/calendar/calendar_channel.cpp
     channels/weather/weather_channel.cpp
     ${RSCS}
 )

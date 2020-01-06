@@ -23,8 +23,8 @@
 
 #include "DwidderApp.h"
 #include "MainWindow.h"
-#include "announcements_channel.h"
-#include "calendar_channel.h"
+#include "channels/announcements/announcements_channel.h"
+#include "channels/calendar/calendar_channel.h"
 
 #include "DataDefs.h"
 #include <df/global_objects.h>
