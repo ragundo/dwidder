@@ -25,6 +25,7 @@
 #include "EventProxy.h"
 #include "announcements_channel.h"
 #include "calendar_channel.h"
+#include "channels/weather/weather_channel.h"
 #include <Core.h>
 
 class MainWindow;
@@ -50,6 +51,7 @@ class DwidderApp
 
     std::unique_ptr<calendar_channel>      m_calendar_channel;
     std::unique_ptr<announcements_channel> m_announcements_channel;
+    std::unique_ptr<weather_channel>       m_weather_channel;
 
     int m_cur_year_tick;
 

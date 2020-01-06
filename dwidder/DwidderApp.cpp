@@ -38,12 +38,14 @@ DwidderApp::DwidderApp(MainWindow* p_parent, std::shared_ptr<EventProxy>&& p_pro
     m_cur_year_tick         = -1;
     m_announcements_channel = std::make_unique<announcements_channel>(this);
     m_calendar_channel      = std::make_unique<calendar_channel>(this);
+    m_weather_channel       = std::make_unique<weather_channel>(this);
 }
 
 void DwidderApp::init()
 {
     m_calendar_channel->update();
     m_announcements_channel->init();
+    m_weather_channel->init();
 }
 
 void DwidderApp::DF_suspend()
@@ -86,6 +88,9 @@ void DwidderApp::tick()
 
         // announcements channel
         m_announcements_channel->do_work();
+
+        // weather channel
+        m_weather_channel->do_work();
     }
 
     DF_resume();
