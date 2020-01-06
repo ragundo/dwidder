@@ -19,6 +19,7 @@
  *
  */
 
+#include <cmath>
 #include "calendar_channel.h"
 #include "DwidderApp.h"
 #include "MainWindow.h"

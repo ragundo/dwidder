@@ -22,6 +22,8 @@
 #ifndef DWARFEXPLORER_MAIN_WINDOW_H
 #define DWARFEXPLORER_MAIN_WINDOW_H
 
+#include <memory>
+
 #include <QMainWindow>
 
 #include <QCloseEvent>

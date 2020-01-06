@@ -33,5 +33,5 @@ add_definitions(
 
 DFHACK_PLUGIN(qapplication
     ${QAPPLICATION_SOURCES} ${QAPPLICATION_MOC_SOURCES} ${QAPPLICATION_UI_SOURCES}
-    LINK_LIBRARIES Qt5::Core Qt5::Widgets dfhack-tinythread Qt5::Qml Qt5::Quick)
+    LINK_LIBRARIES Qt5::Core Qt5::Widgets dfhack-tinythread )
 target_include_directories(qapplication PRIVATE ${CMAKE_CURRENT_BINARY_DIR})

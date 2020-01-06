@@ -2,11 +2,8 @@ project(dwidder LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 
-find_package(Qt5 REQUIRED Core Widgets Qml Quick QuickWidgets)
+find_package(Qt5 REQUIRED Core Widgets )
 
-list(APPEND QML_DIRS "D:/QtWin/5.14.0/msvc2017_64/qml")
-set(QML_IMPORT_PATH "${QML_DIRS}")
-set(QML2_IMPORT_PATH "${QML_DIRS}")
 
 if(UNIX)
 add_definitions(
@@ -60,5 +57,5 @@ add_definitions(
 
 DFHACK_PLUGIN(dwidder
     ${DWIDDER_SOURCES} ${DWIDDER_MOC_SOURCES} ${DWIDDER_UI_SOURCES} ${RSCS}
-    LINK_LIBRARIES Qt5::Core Qt5::Widgets Qt5::Qml Qt5::Quick Qt5::QuickWidgets)
+    LINK_LIBRARIES Qt5::Core Qt5::Widgets)
 target_include_directories(dwidder PRIVATE ${CMAKE_CURRENT_BINARY_DIR})

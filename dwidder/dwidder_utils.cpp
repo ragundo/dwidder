@@ -19,17 +19,8 @@
  *
  */
 
+#include <cmath>
 #include "dwidder_utils.h"
-
-// #include <Console.h>
-// #include <Core.h>
-// #include <DataDefs.h>
-// #include <Export.h>
-// #include <PluginManager.h>
-// #include <RemoteClient.h>
-// #include <RemoteServer.h>
-// #include <VersionInfo.h>
-
 #include "calendar.h"
 
 QString DateAsString(int p_year, int p_month, int p_day)

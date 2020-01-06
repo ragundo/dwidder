@@ -33,7 +33,7 @@
 #include "MainWindow.h"
 
 #include <QUrl>
-#include <QQuickWidget>
+
 
 using namespace DFHack;
 

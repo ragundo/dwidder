@@ -26,7 +26,7 @@
 #include "announcements_channel.h"
 #include "calendar_channel.h"
 
-#include "Datadefs.h"
+#include "DataDefs.h"
 #include <df/global_objects.h>
 
 DwidderApp::DwidderApp(MainWindow* p_parent, std::shared_ptr<EventProxy>&& p_proxy)
