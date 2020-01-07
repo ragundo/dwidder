@@ -44,6 +44,7 @@ DwidderApp::DwidderApp(MainWindow* p_parent, std::shared_ptr<EventProxy>&& p_pro
     m_announcements_channel = std::make_unique<announcements_channel>(this);
     m_calendar_channel      = std::make_unique<calendar_channel>(this);
     m_weather_channel       = std::make_unique<weather_channel>(this);
+    m_mandates_channel      = std::make_unique<mandates_channel>(this);
 }
 
 void DwidderApp::init()
@@ -51,6 +52,7 @@ void DwidderApp::init()
     m_calendar_channel->update();
     m_announcements_channel->init();
     m_weather_channel->init();
+    m_mandates_channel->init();
 }
 
 void DwidderApp::DF_suspend()
@@ -88,14 +90,10 @@ void DwidderApp::tick()
         //Update dwidder tick with th df one
         m_cur_year_tick = *df::global::cur_year_tick;
 
-        // calendar channel
         m_calendar_channel->do_work();
-
-        // announcements channel
         m_announcements_channel->do_work();
-
-        // weather channel
         m_weather_channel->do_work();
+        m_mandates_channel->do_work();
     }
 
     DF_resume();

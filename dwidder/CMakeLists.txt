@@ -27,6 +27,7 @@ set(DWIDDER_SOURCES
     channels/calendar/calendar.cpp
     channels/calendar/calendar_channel.cpp
     channels/weather/weather_channel.cpp
+    channels/mandates/mandates_channel.cpp
     ${RSCS}
 )
 
