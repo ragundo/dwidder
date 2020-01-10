@@ -45,6 +45,7 @@ DwidderApp::DwidderApp(MainWindow* p_parent, std::shared_ptr<EventProxy>&& p_pro
     m_calendar_channel      = std::make_unique<calendar_channel>(this);
     m_weather_channel       = std::make_unique<weather_channel>(this);
     m_mandates_channel      = std::make_unique<mandates_channel>(this);
+    m_crime_channel         = std::make_unique<crime_channel>(this);
 }
 
 void DwidderApp::init()
@@ -53,6 +54,7 @@ void DwidderApp::init()
     m_announcements_channel->init();
     m_weather_channel->init();
     m_mandates_channel->init();
+    m_crime_channel->init();
 }
 
 void DwidderApp::DF_suspend()
@@ -94,6 +96,7 @@ void DwidderApp::tick()
         m_announcements_channel->do_work();
         m_weather_channel->do_work();
         m_mandates_channel->do_work();
+        m_crime_channel->do_work();
     }
 
     DF_resume();

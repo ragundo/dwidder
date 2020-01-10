@@ -44,14 +44,17 @@ std::optional<QString> announcement_data::check_for_unit_name()
     switch (m_type)
     {
         case df::announcement_type::MASTERFUL_IMPROVEMENT:
+        case df::announcement_type::MASTERPIECE_CRAFTED:
         case df::announcement_type::RECRUIT_PROMOTED:
         case df::announcement_type::CITIZEN_BECOMES_NONSOLDIER:
         case df::announcement_type::CITIZEN_BECOMES_SOLDIER:
         case df::announcement_type::ITEM_ATTACHMENT: //comma
         case df::announcement_type::STRESSED_CITIZEN:
         case df::announcement_type::SOLDIER_BECOMES_MASTER:
-        case df::announcement_type::NEW_MANDATE:
+        case df::announcement_type::NEW_MANDATE: // TODO deberia no procesare puesto que lo hace en mandates_channel
         case df::announcement_type::CANCEL_JOB:
+        case df::announcement_type::GUEST_ARRIVAL:
+        case df::announcement_type::PROFESSION_CHANGES:
             return get_dwarf_name(0);
         case df::announcement_type::ARTWORK_DEFACED:
             return get_dwarf_name(1);

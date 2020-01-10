@@ -28,10 +28,15 @@
 #include <QString>
 
 struct calendar_data;
+struct df::unit;
 
-QString DateAsString(int p_year, int p_month, int p_day);
-QString DateAsString(calendar_data* p_calendar_data);
-QString GetDFDate();
-QString coord_2_string(const df::coord& p_coord);
+QString   DateAsString(int p_year, int p_month, int p_day);
+QString   DateAsString(calendar_data* p_calendar_data);
+QString   GetDFDate();
+QString   coord_2_string(const df::coord& p_coord);
+df::unit* getUnitById(int32_t p_id);
+QString   getUnitName(int32_t p_id);
+QString   getUnitRace(df::unit* p_unit);
+QString   getItemDesciption(df::item_type p_item);
 
 #endif // DWIDDER_UTILS_H

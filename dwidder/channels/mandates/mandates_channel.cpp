@@ -38,10 +38,50 @@ mandates_channel::mandates_channel(DwidderApp* p_parent)
 
 void mandates_channel::do_work()
 {
-    if ((df::global::world)->mandates.size() != m_vector_size)
+    auto l_new_size = (df::global::world)->mandates.size();
+    if (l_new_size != m_vector_size)
     {
+        df::mandate* l_mandate = (df::global::world)->mandates[l_new_size - 1];
+        if (!l_mandate)
+            return;
+        if (!l_mandate->unit)
+            return;
+        int     l_unit_id = l_mandate->unit->id;
         QString l_text("new mandate");
+
+        std::vector<DFHack::Units::NoblePosition> l_vec_nobles;
+        if (DFHack::Units::getNoblePositions(&l_vec_nobles, l_mandate->unit))
+        {
+            // We have a noble
+            for (size_t i = 0; i < l_vec_nobles.size(); i++)
+            {
+                DFHack::Units::NoblePosition    l_noble               = l_vec_nobles[i];
+                df::historical_entity*          l_entity              = l_noble.entity;
+                df::entity_position_assignment* l_assignment          = l_noble.assignment;
+                df::entity_position*            l_position            = l_noble.position;
+                auto                            l_unit_profession_std = DFHack::Units::getProfessionName(l_mandate->unit,
+                                                                              false,
+                                                                              false);
+                l_text.append(QString::fromStdString(l_unit_profession_std));
+            }
+            auto                 l_mandate_item_type    = l_mandate->item_type;
+            auto                 l_mandate_item_subtype = l_mandate->item_subtype;
+            DFHack::ItemTypeInfo l_itinfo(l_mandate_item_type, l_mandate_item_subtype);
+            QString              l_s = QString::fromStdString(l_itinfo.toString().c_str());
+
+            auto l_unit_name        = getUnitName(l_unit_id);
+            auto l_item_description = getItemDesciption(l_mandate_item_type);
+
+            l_text.append(l_unit_name +
+                          " " +
+                          " mandates " +
+                          l_s +
+                          " " +
+                          l_item_description);
+        }
+
         m_parent->addText(l_text);
+        m_vector_size = (df::global::world)->mandates.size();
     }
 }
 
@@ -55,9 +95,9 @@ void mandates_channel::init()
         QString pepe        = "pepe";
         auto    l_key_value = std::pair<QString, mandate>(pepe, l_mandate);
         m_processed_mandates.insert(l_key_value);
-
-        m_vector_size = (df::global::world)->mandates.size();
     }
+
+    m_vector_size = (df::global::world)->mandates.size();
 }
 
 mandate::mandate(df::mandate* p_df_mandate)

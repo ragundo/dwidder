@@ -19,9 +19,15 @@
  *
  */
 
-#include <cmath>
 #include "dwidder_utils.h"
-#include "calendar.h"
+#include "channels/calendar/calendar.h"
+#include <cmath>
+
+#include "modules/Items.h"
+#include "modules/Translation.h"
+#include "modules/Units.h"
+
+#include "DataDefs.h"
 
 QString DateAsString(int p_year, int p_month, int p_day)
 {
@@ -77,4 +83,40 @@ QString coord_2_string(const df::coord& p_coord)
     l_result.append("]");
 
     return l_result;
+}
+
+df::unit* getUnitById(int32_t p_id)
+{
+    auto      l_vector_index = DFHack::Units::findIndexById(p_id);
+    df::unit* l_unit         = DFHack::Units::getUnit(l_vector_index);
+    return l_unit;
+}
+
+QString getUnitName(int32_t p_id)
+{
+    auto      l_vector_index = DFHack::Units::findIndexById(p_id);
+    df::unit* l_unit         = DFHack::Units::getUnit(l_vector_index);
+    if (l_unit)
+    {
+        auto l_unit_language_name = DFHack::Units::getVisibleName(l_unit);
+        if (l_unit_language_name)
+        {
+            auto    l_unit_name_std = DFHack::Translation::TranslateName(l_unit_language_name,
+                                                                      false,
+                                                                      false);
+            QString l_unit_name     = QString::fromStdString(l_unit_name_std);
+            return l_unit_name;
+        }
+    }
+    return "";
+}
+
+QString getUnitRace(df::unit* p_unit)
+{
+    return QString::fromStdString(DFHack::Units::getRaceName(p_unit));
+}
+
+QString getItemDesciption(df::item_type p_item_type)
+{
+    return QString::fromStdString(ENUM_KEY_STR(item_type, p_item_type));
 }
