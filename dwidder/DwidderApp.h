@@ -23,11 +23,15 @@
 #define DWIDDERAPP_H
 
 #include "EventProxy.h"
+
+#include "channels/activities/activities_channel.h"
 #include "channels/announcements/announcements_channel.h"
 #include "channels/calendar/calendar_channel.h"
 #include "channels/crime/crime_channel.h"
+#include "channels/incidents/incidents_channel.h"
 #include "channels/mandates/mandates_channel.h"
 #include "channels/weather/weather_channel.h"
+
 #include <Core.h>
 
 #include <QMap>
@@ -59,6 +63,8 @@ class DwidderApp
     std::unique_ptr<weather_channel>       m_weather_channel;
     std::unique_ptr<mandates_channel>      m_mandates_channel;
     std::unique_ptr<crime_channel>         m_crime_channel;
+    std::unique_ptr<activities_channel>    m_activity_channel;
+    std::unique_ptr<incidents_channel>     m_incidents_channel;
 
     int m_cur_year_tick;
 

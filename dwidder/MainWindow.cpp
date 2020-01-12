@@ -58,7 +58,7 @@ MainWindow::MainWindow(std::shared_ptr<EventProxy>&& p_proxy, QWidget* p_parent)
     connect(m_timer, &QTimer::timeout, this, &MainWindow::tick);
 
     setCentralWidget(m_logger);
-    m_timer->start(1000);
+    m_timer->start(500);
 }
 
 //

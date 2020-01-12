@@ -122,6 +122,8 @@ bool announcements_channel::process_announcements(int p_num_new_announcements)
 
 QString announcements_channel::process_announcement(announcement_data* p_data)
 {
+    if (p_data->m_type == df::announcement_type::CANCEL_JOB)
+        return "";
     //  Could not find path not processed
     if (std::find(p_data->m_text.begin(),
                   p_data->m_text.end(),
@@ -131,18 +133,7 @@ QString announcements_channel::process_announcement(announcement_data* p_data)
     QString l_result = QString::number(m_parent->get_cur_year_tick()) + "/" + GetDFDate() + "-";
     QString l_pos    = coord_2_string(p_data->m_pos);
 
-    if ((p_data->m_pos.x != -3000) &&
-        (p_data->m_pos.y != -3000) &&
-        (p_data->m_pos.z != -3000))
-
-    {
-        // Center window and cursor
-        DFHack::Gui::revealInDwarfmodeMap(p_data->m_pos, true);
-
-        DFHack::Gui::setCursorCoords(p_data->m_pos.x,
-                                     p_data->m_pos.y,
-                                     p_data->m_pos.z);
-    }
+    revealInMap(p_data->m_pos);
 
     if (p_data->m_has_unit)
         l_result.append(l_pos + " " + QString::number(p_data->m_type) + " " + p_data->m_text + " (" + QString::number(p_data->m_unit_id) + ")");

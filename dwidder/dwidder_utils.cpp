@@ -18,16 +18,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
-
 #include "dwidder_utils.h"
 #include "channels/calendar/calendar.h"
+#include "utils.h"
 #include <cmath>
 
+#include "modules/Gui.h"
 #include "modules/Items.h"
 #include "modules/Translation.h"
 #include "modules/Units.h"
 
 #include "DataDefs.h"
+
+#include <df/world_site.h>
 
 QString DateAsString(int p_year, int p_month, int p_day)
 {
@@ -96,19 +99,32 @@ QString getUnitName(int32_t p_id)
 {
     auto      l_vector_index = DFHack::Units::findIndexById(p_id);
     df::unit* l_unit         = DFHack::Units::getUnit(l_vector_index);
-    if (l_unit)
+    return getUnitName(l_unit);
+}
+
+QString getUnitName(df::unit* p_unit)
+{
+    if (p_unit)
     {
-        auto l_unit_language_name = DFHack::Units::getVisibleName(l_unit);
+        auto l_unit_language_name = DFHack::Units::getVisibleName(p_unit);
         if (l_unit_language_name)
         {
             auto    l_unit_name_std = DFHack::Translation::TranslateName(l_unit_language_name,
                                                                       false,
                                                                       false);
-            QString l_unit_name     = QString::fromStdString(l_unit_name_std);
+            QString l_unit_name     = DF2QT(l_unit_name_std);
             return l_unit_name;
         }
     }
     return "";
+}
+
+QString getUnitRace(int32_t p_id)
+{
+    auto      l_vector_index = DFHack::Units::findIndexById(p_id);
+    df::unit* l_unit         = DFHack::Units::getUnit(l_vector_index);
+
+    return QString::fromStdString(DFHack::Units::getRaceName(l_unit));
 }
 
 QString getUnitRace(df::unit* p_unit)
@@ -119,4 +135,33 @@ QString getUnitRace(df::unit* p_unit)
 QString getItemDesciption(df::item_type p_item_type)
 {
     return QString::fromStdString(ENUM_KEY_STR(item_type, p_item_type));
+}
+// sub_140801DD0
+
+QString getSiteName(df::world_site* p_site)
+{
+    if (p_site)
+    {
+        auto l_site_name_std = DFHack::Translation::TranslateName(&(p_site->name),
+                                                                  false,
+                                                                  false);
+        return DF2QT(l_site_name_std);
+    }
+    return "";
+}
+
+void revealInMap(df::coord& p_pos)
+{
+    if ((p_pos.x != -3000) &&
+        (p_pos.y != -3000) &&
+        (p_pos.z != -3000))
+
+    {
+        // Center window and cursor
+        DFHack::Gui::revealInDwarfmodeMap(p_pos, true);
+
+        DFHack::Gui::setCursorCoords(p_pos.x,
+                                     p_pos.y,
+                                     p_pos.z);
+    }
 }

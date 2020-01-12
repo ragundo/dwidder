@@ -28,7 +28,11 @@
 #include <QString>
 
 struct calendar_data;
-struct df::unit;
+namespace df
+{
+struct unit;
+struct world_site;
+} // namespace df
 
 QString   DateAsString(int p_year, int p_month, int p_day);
 QString   DateAsString(calendar_data* p_calendar_data);
@@ -36,7 +40,15 @@ QString   GetDFDate();
 QString   coord_2_string(const df::coord& p_coord);
 df::unit* getUnitById(int32_t p_id);
 QString   getUnitName(int32_t p_id);
+QString   getUnitName(df::unit* p_unit);
+QString   getUnitRace(int32_t p_id);
 QString   getUnitRace(df::unit* p_unit);
-QString   getItemDesciption(df::item_type p_item);
+
+QString getItemDesciption(df::item_type p_item);
+
+QString getSiteName(int32_t p_id);
+QString getSiteName(df::world_site* p_site);
+
+void revealInMap(df::coord& p_pos);
 
 #endif // DWIDDER_UTILS_H
