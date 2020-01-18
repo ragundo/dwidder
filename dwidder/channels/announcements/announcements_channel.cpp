@@ -1,7 +1,7 @@
 /*
  * Copyright 2020 Rafael Agundo
  *
- * This file is part of dwarfexplorer plugin for DFHack
+ * This file is part of dwidder plugin for DFHack
  * The code is based on Clement Vuchener qtlabors plugin for DFHack
  *
  * This program is free software: you can redistribute it and/or modify
@@ -38,7 +38,7 @@ announcements_channel::announcements_channel(DwidderApp* p_parent)
 void announcements_channel::init()
 {
     // Copy all the announcements ids to the set
-    for (int i = 0; i < (df::global::world)->status.announcements.size(); i++)
+    for (size_t i = 0; i < (df::global::world)->status.announcements.size(); i++)
     {
         df::report* l_report = (df::global::world)->status.announcements[i];
         m_processed_announcements.insert(l_report->id);
@@ -74,7 +74,7 @@ bool announcements_channel::process_announcements(int p_num_new_announcements)
     std::vector<std::unique_ptr<announcement_data>> l_initial_data_vector;
     std::vector<std::unique_ptr<announcement_data>> l_final_data_vector;
 
-    for (int i = (df::global::world)->status.announcements.size() - p_num_new_announcements, j = 0; i < (df::global::world)->status.announcements.size(); i++)
+    for (size_t i = (df::global::world)->status.announcements.size() - p_num_new_announcements, j = 0; i < (df::global::world)->status.announcements.size(); i++)
     {
         df::report* l_report       = (df::global::world)->status.announcements[i];
         auto        l_announcement = std::make_unique<announcement_data>(l_report);
@@ -109,7 +109,7 @@ bool announcements_channel::process_announcements(int p_num_new_announcements)
         l_final_data_vector.push_back(std::move(l_initial_data_vector[i]));
     }
 
-    for (int i = 0; i < l_final_data_vector.size(); i++)
+    for (size_t i = 0; i < l_final_data_vector.size(); i++)
     {
         announcement_data* l_data   = l_final_data_vector[i].get();
         QString            l_result = process_announcement(l_data);
@@ -133,7 +133,7 @@ QString announcements_channel::process_announcement(announcement_data* p_data)
     QString l_result = QString::number(m_parent->get_cur_year_tick()) + "/" + GetDFDate() + "-";
     QString l_pos    = coord_2_string(p_data->m_pos);
 
-    revealInMap(p_data->m_pos);
+    //revealInMap(p_data->m_pos);
 
     if (p_data->m_has_unit)
         l_result.append(l_pos + " " + QString::number(p_data->m_type) + " " + p_data->m_text + " (" + QString::number(p_data->m_unit_id) + ")");

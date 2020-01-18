@@ -1,7 +1,7 @@
 /*
  * Copyright 2020 Rafael Agundo
  *
- * This file is part of dwarfexplorer plugin for DFHack
+ * This file is part of dwidder plugin for DFHack
  * The code is based on Clement Vuchener qtlabors plugin for DFHack
  *
  * This program is free software: you can redistribute it and/or modify
@@ -106,8 +106,9 @@ activities_channel::activities_channel(DwidderApp* p_parent)
 
 void activities_channel::do_work()
 {
+    return;
     auto l_new_size = (df::global::world)->activities.all.size();
-    for (int i = 0; i < l_new_size; i++)
+    for (size_t i = 0; i < l_new_size; i++)
     {
         df::activity_entry* l_activity = (df::global::world)->activities.all[i];
         if (m_id_set.find(l_activity->id) == m_id_set.end())
@@ -116,7 +117,7 @@ void activities_channel::do_work()
             m_parent->addText(l_text);
             if (l_activity->events.size() > 0)
             {
-                for (int j = 0; j < l_activity->events.size(); j++)
+                for (size_t j = 0; j < l_activity->events.size(); j++)
                 {
                     df::activity_event* l_event      = l_activity->events[j];
                     QString             l_event_text = activity_event_subtype(l_event);
@@ -126,7 +127,7 @@ void activities_channel::do_work()
                         df::activity_event_conversationst* l_conversation_event = (df::activity_event_conversationst*)l_event;
                         if (l_conversation_event)
                         {
-                            for (int k = 0; k < l_conversation_event->participants.size(); k++)
+                            for (size_t k = 0; k < l_conversation_event->participants.size(); k++)
                             {
                                 auto l_participant = l_conversation_event->participants[k];
                                 if (l_participant->unit_id != -1)
@@ -149,7 +150,7 @@ void activities_channel::do_work()
 void activities_channel::init()
 {
     auto l_new_size = (df::global::world)->activities.all.size();
-    for (int i = 0; i < l_new_size; i++)
+    for (size_t i = 0; i < l_new_size; i++)
     {
         df::activity_entry* l_activity = (df::global::world)->activities.all[i];
         m_id_set.insert(l_activity->id);

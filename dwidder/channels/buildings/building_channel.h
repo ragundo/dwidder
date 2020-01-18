@@ -19,31 +19,32 @@
  *
  */
 
-#ifndef ANNOUNCEMENTS_CHANNEL_H
-#define ANNOUNCEMENTS_CHANNEL_H
+#ifndef BUILDING_CHANNEL_H
+#define BUILDING_CHANNEL_H
 
+#include <map>
 #include <set>
 
-#include <QString>
+#include "DataDefs.h"
 
-struct announcement_data;
+#include <df/building_type.h>
+
 class DwidderApp;
 
-class announcements_channel
+class building_channel
 {
   public:
-    announcements_channel(DwidderApp* p_parent);
+    building_channel(DwidderApp* p_parent);
     void do_work();
     void init();
 
   private:
-    std::set<int> m_processed_announcements;
+    std::multimap<df::enums::building_type::building_type, int32_t> m_processed_buildings;
+    std::set<int32_t>                                               m_in_construction_buildings;
 
   private:
-    int         check_for_new_announcements();
-    bool        process_announcements(int p_num_new_announcements);
-    QString     process_announcement(announcement_data* p_data);
     DwidderApp* m_parent;
+    size_t      m_known_buildings;
 };
 
 #endif

@@ -31,6 +31,8 @@ set(DWIDDER_SOURCES
     channels/crime/crime_channel.cpp
     channels/activities/activities_channel.cpp
     channels/incidents/incidents_channel.cpp
+    channels/buildings/building_channel.cpp
+    channels/items/items_channel.cpp
     ${RSCS}
 )
 

@@ -1,7 +1,7 @@
 /*
  * Copyright 2020 Rafael Agundo
  *
- * This file is part of dwarfexplorer plugin for DFHack
+ * This file is part of dwidder plugin for DFHack
  * The code is based on Clement Vuchener qtlabors plugin for DFHack
  *
  * This program is free software: you can redistribute it and/or modify
@@ -29,7 +29,6 @@
 
 #include "DwidderApp.h"
 #include "MainWindow.h"
-#include "channels/announcements/announcements_channel.h"
 #include "channels/calendar/calendar_channel.h"
 
 #include <modules/Translation.h>
@@ -48,6 +47,8 @@ DwidderApp::DwidderApp(MainWindow* p_parent, std::shared_ptr<EventProxy>&& p_pro
     m_crime_channel         = std::make_unique<crime_channel>(this);
     m_activity_channel      = std::make_unique<activities_channel>(this);
     m_incidents_channel     = std::make_unique<incidents_channel>(this);
+    m_buildings_channel     = std::make_unique<building_channel>(this);
+    m_items_channel         = std::make_unique<items_channel>(this);
 }
 
 void DwidderApp::init()
@@ -59,6 +60,8 @@ void DwidderApp::init()
     m_crime_channel->init();
     m_activity_channel->init();
     m_incidents_channel->init();
+    m_buildings_channel->init();
+    m_items_channel->init();
 }
 
 void DwidderApp::DF_suspend()
@@ -103,6 +106,8 @@ void DwidderApp::tick()
         m_crime_channel->do_work();
         m_activity_channel->do_work();
         m_incidents_channel->do_work();
+        m_buildings_channel->do_work();
+        m_items_channel->do_work();
     }
 
     DF_resume();
@@ -124,7 +129,7 @@ int DwidderApp::get_dwarf_id_by_name_in_text(QString& p_dwarf_name)
     if (l_dwarf_id != 0)
         return l_dwarf_id;
 
-    for (int i = 0; i < (df::global::world)->units.active.size(); i++)
+    for (size_t i = 0; i < (df::global::world)->units.active.size(); i++)
     {
         df::unit*          l_unit          = (df::global::world)->units.active[i];
         df::language_name* l_lang          = &(l_unit->name);

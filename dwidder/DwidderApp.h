@@ -1,7 +1,7 @@
 /*
  * Copyright 2020 Rafael Agundo
  *
- * This file is part of dwarfexplorer plugin for DFHack
+ * This file is part of dwidder plugin for DFHack
  * The code is based on Clement Vuchener qtlabors plugin for DFHack
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,9 +26,11 @@
 
 #include "channels/activities/activities_channel.h"
 #include "channels/announcements/announcements_channel.h"
+#include "channels/buildings/building_channel.h"
 #include "channels/calendar/calendar_channel.h"
 #include "channels/crime/crime_channel.h"
 #include "channels/incidents/incidents_channel.h"
+#include "channels/items/items_channel.h"
 #include "channels/mandates/mandates_channel.h"
 #include "channels/weather/weather_channel.h"
 
@@ -65,6 +67,8 @@ class DwidderApp
     std::unique_ptr<crime_channel>         m_crime_channel;
     std::unique_ptr<activities_channel>    m_activity_channel;
     std::unique_ptr<incidents_channel>     m_incidents_channel;
+    std::unique_ptr<building_channel>      m_buildings_channel;
+    std::unique_ptr<items_channel>         m_items_channel;
 
     int m_cur_year_tick;
 

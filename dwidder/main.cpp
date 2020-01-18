@@ -1,7 +1,7 @@
 /*
  * Copyright 2019 Clement Vuchener
  *
- * This file is part of qtlabors plugin for DFHack
+ * This file is part of dwidder plugin for DFHack
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -22,8 +22,8 @@
 #include "PluginManager.h"
 
 #include "DataDefs.h"
-#include "df/world.h"
 #include "df/viewscreen_setupdwarfgamest.h"
+#include "df/world.h"
 
 #include "modules/Gui.h"
 
@@ -34,32 +34,32 @@
 
 #include <QUrl>
 
-
 using namespace DFHack;
-
 
 DFHACK_PLUGIN("dwidder");
 
 static std::weak_ptr<EventProxy> event_proxy;
 
 // Commands
-static command_result dwidder_cmd(color_ostream &out, std::vector<std::string> &parameters)
+static command_result dwidder_cmd(color_ostream& out, std::vector<std::string>& parameters)
 {
-	if (addTopLevelWidget([&](){
-                auto ptr = event_proxy.lock();
-                if (!ptr) {
-                    ptr.reset(new EventProxy);
-                    event_proxy = ptr;
-                }
-                return new MainWindow(std::move(ptr));
-            }, &out))
+    if (addTopLevelWidget([&]() {
+            auto ptr = event_proxy.lock();
+            if (!ptr)
+            {
+                ptr.reset(new EventProxy);
+                event_proxy = ptr;
+            }
+            return new MainWindow(std::move(ptr));
+        },
+                          &out))
         return CR_OK;
     else
         return CR_FAILURE;
 }
 
 // Plugin functions
-DFhackCExport command_result plugin_init(color_ostream &out, std::vector<PluginCommand> &commands)
+DFhackCExport command_result plugin_init(color_ostream& out, std::vector<PluginCommand>& commands)
 {
     commands.push_back(PluginCommand("dwidder",
                                      "Hace algo",
@@ -69,37 +69,40 @@ DFhackCExport command_result plugin_init(color_ostream &out, std::vector<PluginC
     return CR_OK;
 }
 
-DFhackCExport command_result plugin_shutdown(color_ostream &out)
+DFhackCExport command_result plugin_shutdown(color_ostream& out)
 {
     return CR_OK;
 }
 
-DFhackCExport command_result plugin_onstatechange(color_ostream &out, state_change_event event)
+DFhackCExport command_result plugin_onstatechange(color_ostream& out, state_change_event event)
 {
     static bool in_embark_screen = false;
-    auto proxy = event_proxy.lock();
+    auto        proxy            = event_proxy.lock();
     if (!proxy)
         return CR_OK;
-    switch (event) {
-    case SC_MAP_LOADED:
-        proxy->mapLoaded();
-        break;
-    case SC_MAP_UNLOADED:
-        proxy->mapUnloaded();
-        break;
-    case SC_VIEWSCREEN_CHANGED: {
-        auto embark_viewscreen = Gui::getViewscreenByType<df::viewscreen_setupdwarfgamest>();
-        if (in_embark_screen != bool(embark_viewscreen)) {
-            if (embark_viewscreen)
-                proxy->embarkScreenOpened();
-            else
-                proxy->embarkScreenClosed();
-            in_embark_screen = embark_viewscreen;
+    switch (event)
+    {
+        case SC_MAP_LOADED:
+            proxy->mapLoaded();
+            break;
+        case SC_MAP_UNLOADED:
+            proxy->mapUnloaded();
+            break;
+        case SC_VIEWSCREEN_CHANGED:
+        {
+            auto embark_viewscreen = Gui::getViewscreenByType<df::viewscreen_setupdwarfgamest>();
+            if (in_embark_screen != bool(embark_viewscreen))
+            {
+                if (embark_viewscreen)
+                    proxy->embarkScreenOpened();
+                else
+                    proxy->embarkScreenClosed();
+                in_embark_screen = embark_viewscreen;
+            }
+            break;
         }
-        break;
-    }
-    default:
-        break;
+        default:
+            break;
     }
     return CR_OK;
 }

@@ -1,7 +1,7 @@
 /*
  * Copyright 2020 Rafael Agundo
  *
- * This file is part of dwarfexplorer plugin for DFHack
+ * This file is part of dwidder plugin for DFHack
  * The code is based on Clement Vuchener qtlabors plugin for DFHack
  *
  * This program is free software: you can redistribute it and/or modify
@@ -41,13 +41,13 @@ void incidents_channel::do_work()
     {
         if (l_new_size > m_vector_size)
         {
-            for (int i = m_vector_size; i < l_new_size; i++)
+            for (size_t i = m_vector_size; i < l_new_size; i++)
             {
                 df::incident* l_incident = (df::global::world)->incidents.all[i];
 
                 std::vector<QString> l_witnesses;
                 QString              l_witness_names = "Witness:";
-                for (auto j = 0; j < l_incident->witnesses.size(); j++)
+                for (size_t j = 0; j < l_incident->witnesses.size(); j++)
                 {
                     df::unit* l_unit_witness = getUnitById(l_incident->witnesses[j]);
                     QString   l_witnes_name  = getUnitName(l_incident->witnesses[j]);
@@ -70,7 +70,7 @@ void incidents_channel::do_work()
                     {
                         df::unit* l_victim_unit = getUnitById(l_incident->victim);
 
-                        revealInMap(l_victim_unit->pos);
+                        //revealInMap(l_victim_unit->pos);
 
                         QString l_text = "Incident";
                         l_victim_name  = getUnitName(l_incident->victim);

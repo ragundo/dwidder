@@ -1,7 +1,7 @@
 /*
  * Copyright 2020 Rafael Agundo
  *
- * This file is part of dwarfexplorer plugin for DFHack
+ * This file is part of dwidder plugin for DFHack
  * The code is based on Clement Vuchener qtlabors plugin for DFHack
  *
  * This program is free software: you can redistribute it and/or modify
@@ -75,7 +75,7 @@ void mandates_channel::do_work()
 
                     auto l_unit_name = getUnitName(l_unit_id);
                     auto l_unit      = getUnitById(l_unit_id);
-                    revealInMap(l_unit->pos);
+                    //revealInMap(l_unit->pos);
                     auto l_item_description = getItemDesciption(l_mandate_item_type);
 
                     l_text.append(l_unit_name +
